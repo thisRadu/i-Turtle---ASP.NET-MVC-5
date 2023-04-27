@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -100,6 +101,11 @@ namespace i_Turtle.Models
             });
 
             OnModelCreatingPartial(modelBuilder);
+        }
+
+        internal Task<bool> CheckPasswordAsync(User user, string password)
+        {
+            throw new NotImplementedException();
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -1,0 +1,8 @@
+﻿<div class="text-center">
+    <form method="post" action="/Account/Logout">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-sad-tear mr-2"></i>Logout
+        </button>
+    </form>
+</div>

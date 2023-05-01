@@ -1,10 +1,23 @@
-﻿@model IEnumerable<i_Turtle.Models.Patient>
+﻿@model PatientPaginationViewModel
 
 @{
     ViewData["Title"] = "Patients";
+    var page = ViewContext.HttpContext.Request.Query["page"];
 }
-
 <h1>Patients</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Patients" asp-action="Index" method="get">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon2" name="searchString" value="@ViewData["CurrentFilter"]" />
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+ </div>
+
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -13,7 +26,7 @@
     <thead>
         <tr>
               <th>
-                Risk Scale
+                 Risk Scale
             </th>
               <th>
                 Contact Parent
@@ -32,7 +45,7 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Patients) {
             var color = "black";
             @if (item.RiscScale.ToLower() == "moderate") { color = "orange"; } else if (item.RiscScale.ToLower() == "high") { color = "red"; }
                ;
@@ -62,3 +75,42 @@
 }
     </tbody>
 </table>
+
+<nav>
+    
+     <ul class="pagination">
+    <form asp-page-handler="SetPatientsPerPage">
+        <label asp-for="PatientsPerPage"></label>
+        <select asp-for="PatientsPerPage" class="form-control" onchange="this.form.submit()">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="10">10</option>
+        </select>
+    </form>
+
+ <form asp-page-handler="SortBy">
+        <label asp-for="SortBy"></label>
+        <select asp-for="SortBy" class="form-control" onchange="this.form.submit()">
+             <option value="">...</option>
+            <option value="risk">Risk Level</option>
+            <option value="name">Child's Name</option>
+            <option value="HandlingDate">Handling Date</option>
+        </select>
+    </form>
+  
+
+        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", "Patients", new { page = Model.PageIndex - 1, patientsPerPage = Model.PatientsPerPage })">Previous</a>
+        </li>
+               @for(int i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", "Patients", new {  page = i, patientsPerPage = Model.PatientsPerPage })">@i</a>
+            </li>
+        }
+        <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+            <a class="page-link"  href="@Url.Action("Index", "Patients", new {  page = Model.PageIndex + 1, patientsPerPage = Model.PatientsPerPage })">Next</a>
+        </li>
+    </ul>
+</nav>
+

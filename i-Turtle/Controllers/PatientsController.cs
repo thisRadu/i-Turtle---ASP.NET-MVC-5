@@ -21,11 +21,43 @@ namespace i_Turtle.Controllers
         }
 
         // GET: Patients
+     
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int page = 1, int patientsPerPage = 2, string sortBy ="")
         {
-           
-            return View(await _context.Patients.ToListAsync());
+            
+            var patients = from p in _context.Patients
+                           select p;
+          
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                patients = patients.Where(p => p.Name.Contains(searchString));
+            }
+
+            int totalPatients = await patients.CountAsync();
+
+            var viewModel = new PatientPaginationViewModel
+
+            {
+                Patients = await patients.Skip((page - 1) * patientsPerPage)
+                                          .Take(patientsPerPage)
+                                          .ToListAsync(),
+                PageIndex = page,
+                TotalPatients = totalPatients,
+                PatientsPerPage = patientsPerPage,
+                TotalPages = totalPatients / patientsPerPage,
+                SortBy = sortBy
+                
+            };
+            switch (sortBy)
+            {
+                case "": break;
+                case "risk": viewModel.Patients = patients.OrderBy(p => p.RiscScale); break;
+                case "name": viewModel.Patients = patients.OrderBy(p => p.Name); break;
+                case "HandlingDate": viewModel.Patients = patients.OrderBy(p => p.HandlingDate); break;
+            }
+
+            return View(viewModel);
         }
 
         // GET: Patients/Details/5

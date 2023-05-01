@@ -54,7 +54,29 @@ namespace i_Turtle.Models
                     return parents;
                 }*/
     }
-  
+    public class PatientPaginationViewModel
+    {
+        public string SortBy { get; set; }
+        public IEnumerable<Patient> Patients { get; set; }
+        public int PageIndex { get; set; }
+        public int TotalPages { get; set; }
+        public int PatientsPerPage { get; set; }
+        public int TotalPatients { get; set; }
+        public bool HasPreviousPage
+        {
+            get
+            {
+                return (PageIndex > 1);
+            }
+        }
+        public bool HasNextPage
+        {
+            get
+            {
+                return (PageIndex < TotalPages);
+            }
+        }
+    }
 }
 
 

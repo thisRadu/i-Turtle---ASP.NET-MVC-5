@@ -58,7 +58,7 @@
                 @Html.DisplayFor(modelItem => item.ParentId)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                <a asp-action="Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a> 
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.HandlingDate)
@@ -79,7 +79,7 @@
 <nav>
     
      <ul class="pagination">
-    <form asp-page-handler="SetPatientsPerPage">
+   @* <form asp-page-handler="SetPatientsPerPage">
         <label asp-for="PatientsPerPage"></label>
         <select asp-for="PatientsPerPage" class="form-control" onchange="this.form.submit()">
             <option value="2">2</option>
@@ -97,7 +97,7 @@
             <option value="HandlingDate">Handling Date</option>
         </select>
     </form>
-  
+  *@
 
         <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
             <a class="page-link" href="@Url.Action("Index", "Patients", new { page = Model.PageIndex - 1, patientsPerPage = Model.PatientsPerPage })">Previous</a>

@@ -1,4 +1,5 @@
 using i_Turtle.Models;
+using i_Turtle.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,13 +27,16 @@ namespace i_Turtle
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddControllersWithViews();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
-               
+
             });
+                 
             services.AddDbContext<TurtleDbContext>(options =>
                  options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
+       
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +59,7 @@ namespace i_Turtle
 
             app.UseAuthorization();
             app.UseAuthentication();
+          //  app.UseMiddleware<TwoFactorMiddleware>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

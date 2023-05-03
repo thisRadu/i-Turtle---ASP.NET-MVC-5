@@ -24,13 +24,20 @@
                             <input asp-for="UserName" class="form-control" />
                             <span asp-validation-for="UserName" class="text-danger"></span>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="Password" class="control-label">
-                                <i class="bi bi-lock"></i> Password
-                            </label>
-                            <input asp-for="Password" class="form-control" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
+                      <div class="form-group">
+    <label asp-for="Password" class="control-label">
+        <i class="bi bi-lock"></i> Password
+    </label>
+    <div class="input-group">
+        <input asp-for="Password"  type="password" class="form-control" />
+        <button type="button" class="btn btn-outline-secondary toggle-password">
+            <i class="fa fa-eye-slash"></i>
+        </button>
+    </div>
+    <span asp-validation-for="Password" class="text-danger"></span>
+</div>
+
+
                         <div class="form-group">
                           <button type="submit" class="btn btn-success">
                                 <i class="fas fa-sign-in-alt"></i> Login
@@ -43,5 +50,15 @@
     </div>
 </div>
 @section Scripts {
+        <script>
+        $(function () {
+            $('.toggle-password').click(function () {
+                var input = $(this).parent().find('input');
+                var icon = $(this).find('i');
+                input.attr('type', input.attr('type') === 'password' ? 'text' : 'password');
+                icon.toggleClass('fa-eye fa-eye-slash');
+            });
+        });
+    </script>
 @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

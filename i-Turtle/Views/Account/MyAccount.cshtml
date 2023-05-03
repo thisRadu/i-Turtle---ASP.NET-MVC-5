@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="MyAccount">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -33,21 +33,10 @@
                 <input asp-for="Phone" class="form-control" />
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Role" class="control-label"></label>
-                <input asp-for="Role" class="form-control" />
-                <span asp-validation-for="Role" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Active" /> @Html.DisplayNameFor(model => model.Active)
-                </label>
-            </div>
-             <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="TwoFactorEnabled" /> @Html.DisplayNameFor(model => model.TwoFactorEnabled)
-                </label>
-            </div>
+        
+        
+
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -55,9 +44,22 @@
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+   <div>
+    @if (Model.TwoFactorEnabled)
+    {
+        @Html.Raw("Enable Two-Factor Authentication is Enable")
+        <a class="btn btn-success" asp-controller="twoFactor"  asp-action="EnableTwoFactor" asp-method="get">Disable Enable Two-Factor Authentication</a>
+    }
+    @if (!Model.TwoFactorEnabled)
+    {
+        @Html.Raw("Enable Two-Factor Authentication is disabled")
+        <a class="btn btn-success" asp-controller="twoFactor" asp-action="EnableTwoFactor" asp-method="get">Enable Two-Factor Authenticationr</a>
+
+      
+    }
 </div>
+
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

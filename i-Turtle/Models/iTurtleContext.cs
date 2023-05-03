@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -7,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace i_Turtle.Models
 {
-    public partial class TurtleDbContext : DbContext
+    public partial class iTurtleContext : DbContext
     {
-        public TurtleDbContext()
+        public iTurtleContext()
         {
         }
 
-        public TurtleDbContext(DbContextOptions<TurtleDbContext> options)
+        public iTurtleContext(DbContextOptions<iTurtleContext> options)
             : base(options)
         {
         }
@@ -26,7 +25,7 @@ namespace i_Turtle.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=i-Turtle;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=i-Turtle;Trusted_Connection=True");
             }
         }
 
@@ -98,25 +97,9 @@ namespace i_Turtle.Models
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("role");
-
-                entity.Property(e => e.TwoFactorEnabled)
-                   .IsRequired()
-                   .HasMaxLength(20)
-                   .IsUnicode(false)
-                   .HasColumnName("TwoFactorEnabled");
-                entity.Property(e => e.TwoFactorCode)
-                   .IsRequired()
-                   .HasMaxLength(100)
-                   .IsUnicode(false)
-                   .HasColumnName("TwoFactorCode");
             });
 
             OnModelCreatingPartial(modelBuilder);
-        }
-
-        internal Task<bool> CheckPasswordAsync(User user, string password)
-        {
-            throw new NotImplementedException();
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

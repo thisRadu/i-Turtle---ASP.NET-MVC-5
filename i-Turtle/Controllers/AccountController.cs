@@ -76,8 +76,14 @@ namespace i_Turtle.Controllers
 
                 // Authenticate user here
                 var user = await _context.Users.FirstOrDefaultAsync(x=> x.Name == model.UserName);
+
+                if (user.TwoFactorEnabled)
+                {
+                    return RedirectToAction("TwoFactor", new { returnUrl });
+                }
                 if (user != null && user.Password == model.Password)
                 {
+
                     // Create claims for authenticated user
                     var claims = new List<Claim>
             {
@@ -85,7 +91,7 @@ namespace i_Turtle.Controllers
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.NameIdentifier, user.Name)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
                     // Create authentication properties
@@ -96,12 +102,13 @@ namespace i_Turtle.Controllers
                     };
 
                     // Create and sign in the user
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    object value =  HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
                         authProperties);
+                
 
-                    // Redirect to home page
-                    return Redirect("https://localhost:44395/Patients");// +returnUrl);
+                // Redirect to home page
+                return Redirect("https://localhost:44395/Patients");// +returnUrl);
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid username or password");
@@ -146,7 +153,9 @@ namespace i_Turtle.Controllers
                 Phone = "Not set",
                 Name = model.UserName,
                 Password = model.Password,
-                Email = model.Email
+                Email = model.Email,
+                TwoFactorEnabled = false,
+                TwoFactorCode = string.Empty
 
             };
 /*
@@ -179,7 +188,7 @@ namespace i_Turtle.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Password,Email,Phone,Role,Active")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Password,Email,Phone,Role,Active,TwoFactorEnabled")] User user)
         {
             if (id != user.Id)
             {
@@ -238,9 +247,67 @@ namespace i_Turtle.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> MyAccount()
+        {
+            int id = Convert.ToInt32((HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        // POST: Account/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MyAccount(int id, [Bind("Name,Password,Email,Phone")] User user)
+        {
+            var updateUser = await _context.Users.FindAsync(id);
+            if (HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value != updateUser.Id.ToString()) return BadRequest();
+          
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    updateUser.Name = user.Name;
+                    updateUser.Password = user.Password;
+                    updateUser.Email = user.Email;
+                    updateUser.Phone = user.Phone;
+                    _context.Update(updateUser);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!UserExists(user.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return View(user);
+            }
+            return View(user);
+        }
+
+
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
         }
+
+
+
     }
 }

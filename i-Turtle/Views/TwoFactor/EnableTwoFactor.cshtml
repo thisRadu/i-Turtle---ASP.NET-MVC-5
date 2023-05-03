@@ -1,0 +1,26 @@
+﻿@model TwoFactorViewModel
+
+<h2 class="text-center">Enable Two-Factor Authentication</h2>
+
+<div class="text-center mb-3">
+    <p>Scan the QR code below to set up two-factor authentication for your account:</p>
+    <img src="@("data:image/png;base64," + Convert.ToBase64String(Model.QrCodeUrl))" />
+</div>
+
+<div class="text-center mb-3">
+    <p>If you are unable to scan the QR code, you can manually enter this code:</p>
+    <p style="font-weight : bold" ">@Model.SharedKey</p>
+</div>
+
+<div class="text-center mb-3">
+    <p>After you have set up two-factor authentication, enter the verification code below to enable it:</p>
+
+    <form method="post" asp-controller="TwoFactor" asp-action="EnableTwoFactor">
+        <div class="form-group d-inline-flex">
+            <label for="code" class="mr-2 align-self-center"><i class="fas fa-key"></i></label>
+            <input type="text" style="width: 150px;" name="code" id="code" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-lock"></i> Enable Two-Factor Authentication</button>
+    </form>
+</div>

@@ -10,9 +10,13 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using BCrypt.Net;
+using BCrypt;
 
 namespace i_Turtle.Controllers
 {
+   
     public class AccountController : Controller
     {
         private readonly TurtleDbContext _context;
@@ -33,13 +37,13 @@ namespace i_Turtle.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: Account
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Users.ToListAsync());
         }
 
-        // GET: Account/Details/5
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -57,32 +61,32 @@ namespace i_Turtle.Controllers
             return View(user);
         }
 
-        // GET: Account/Create
+      
         public IActionResult Login(string returnUrl)
         {
             ViewData["ReturnUrl"] = returnUrl;  
             return View();
         }
 
-        // POST: Account/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([Bind("UserName,Password")] LoginModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
+               
 
                 // Authenticate user here
                 var user = await _context.Users.FirstOrDefaultAsync(x=> x.Name == model.UserName);
 
-                if (user.TwoFactorEnabled)
+
+              
+                if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
                 {
-                    return RedirectToAction("TwoFactor", new { returnUrl });
-                }
-                if (user != null && user.Password == model.Password)
-                {
+                    if (user.TwoFactorEnabled)
+                    {
+                        return RedirectToAction("TwoFactor", new { returnUrl });
+                    }
 
                     // Create claims for authenticated user
                     var claims = new List<Claim>
@@ -112,10 +116,11 @@ namespace i_Turtle.Controllers
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid username or password");
-            
 
-        }
-            return BadRequest();
+
+            }
+
+            return View(model);
         }
      
         public async Task<IActionResult> Register(string returnUrl)
@@ -152,22 +157,20 @@ namespace i_Turtle.Controllers
                 Active = true,
                 Phone = "Not set",
                 Name = model.UserName,
-                Password = model.Password,
+                Password  = BCrypt.Net.BCrypt.HashPassword(model.Password),
                 Email = model.Email,
                 TwoFactorEnabled = false,
                 TwoFactorCode = string.Empty
 
             };
-/*
-            var passwordHasher = new PasswordHasher<User>();
-            user.Password = passwordHasher.HashPassword(user, model.Password);*/
+
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Login", "Account");
         }
-        // GET: Account/Edit/5
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -182,10 +185,7 @@ namespace i_Turtle.Controllers
             }
             return View(user);
         }
-
-        // POST: Account/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Password,Email,Phone,Role,Active,TwoFactorEnabled")] User user)
@@ -218,7 +218,7 @@ namespace i_Turtle.Controllers
             return View(user);
         }
 
-        // GET: Account/Delete/5
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -236,7 +236,7 @@ namespace i_Turtle.Controllers
             return View(user);
         }
 
-        // POST: Account/Delete/5
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -246,7 +246,7 @@ namespace i_Turtle.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public async Task<IActionResult> MyAccount()
         {
             int id = Convert.ToInt32((HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
@@ -263,9 +263,7 @@ namespace i_Turtle.Controllers
             return View(user);
         }
 
-        // POST: Account/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MyAccount(int id, [Bind("Name,Password,Email,Phone")] User user)
@@ -300,7 +298,10 @@ namespace i_Turtle.Controllers
             }
             return View(user);
         }
-
+        public ActionResult AccessDenied()
+        {
+            return View();
+        }
 
         private bool UserExists(int id)
         {

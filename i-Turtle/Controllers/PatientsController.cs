@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace i_Turtle.Controllers
 {
+    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class PatientsController : Controller
     {
         private readonly TurtleDbContext _context;
@@ -22,7 +23,7 @@ namespace i_Turtle.Controllers
 
         // GET: Patients
      
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+      
         public async Task<IActionResult> Index(string searchString, int page = 1, int patientsPerPage = 10, string sortBy ="")
         {
             
